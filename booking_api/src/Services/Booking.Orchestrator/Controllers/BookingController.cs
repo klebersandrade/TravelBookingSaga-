@@ -1,31 +1,36 @@
 using Booking.Orchestrator.Application.Commands;
-using Booking.Orchestrator.Application.Services;
+using Booking.Orchestrator.Application.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.Orchestrator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BookingController: ControllerBase
+public class BookingController : ControllerBase
 {
-    private readonly BookingSagaOrchestrator _orchestrator;
+    private readonly IMediator _mediator;
 
-    public BookingController(BookingSagaOrchestrator orchestrator)
+    public BookingController(IMediator mediator)
     {
-        _orchestrator = orchestrator;
+        _mediator = mediator;
     }
 
     [HttpPost]
-    public IActionResult CreateBooking([FromBody] CreateBookingCommand command)
+    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingCommand command)
     {
-        var response = _orchestrator.StartSaga(command);
+        var response = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetBookingStatus), new { id = response.BookingId }, response);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetBookingStatus(Guid id)
+    public async Task<IActionResult> GetBookingStatus(Guid id)
     {
-        // TODO: Get saga status from database
-        throw new NotImplementedException();
+        var response = await _mediator.Send(new GetBookingStatusQuery(id));
+
+        if (response is null)
+            return NotFound();
+
+        return Ok(response);
     }
 }

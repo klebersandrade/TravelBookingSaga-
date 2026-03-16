@@ -1,6 +1,9 @@
+using Booking.Orchestrator.Application.Responses;
+using MediatR;
+
 namespace Booking.Orchestrator.Application.Commands;
 
-public record CreateBookingCommand
+public record CreateBookingCommand : IRequest<BookingResponse>
 {
     public bool HasFlight { get; init; }
     public bool HasCar { get; init; }

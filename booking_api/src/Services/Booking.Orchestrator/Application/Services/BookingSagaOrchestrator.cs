@@ -1,32 +1,69 @@
 using Booking.Orchestrator.Application.Commands;
 using Booking.Orchestrator.Application.Responses;
+using Booking.Orchestrator.Domain.Entities;
+using Booking.Orchestrator.Infrastructure.Repositories;
+using TravelBooking.Common.Saga;
 
 namespace Booking.Orchestrator.Application.Services;
 
 public class BookingSagaOrchestrator
 {
-    public BookingResponse StartSaga(CreateBookingCommand command)
+    private readonly IBookingSagaRepository _repository;
+
+    public BookingSagaOrchestrator(IBookingSagaRepository repository)
     {
-        // 1. Create a new BookingSaga entity
-        // 2. Set state to SagaState.Started
-        // 3. Determine first step (Flight? Car? Hotel?)
-        // 4. Publish the first command to Kafka
-        // 5. Return BookingResponse
-        throw new NotImplementedException();
+        _repository = repository;
     }
 
-    public void HandleStepCompleted(string stepName, Guid bookingId)
+    public async Task<BookingResponse> StartSaga(CreateBookingCommand command)
     {
-        // 1. Update saga state
-        // 2. Add step to CompletedSteps
-        // 3. Determine and publish next step
-        throw new NotImplementedException();
+        var saga = new BookingSaga
+        {
+            Id = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid(),
+            CurrentState = SagaState.Started,
+            HasFlight = command.HasFlight,
+            HasCar = command.HasCar,
+            HasHotel = command.HasHotel,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _repository.CreateAsync(saga);
+
+        // TODO: Publish first command to Kafka
+
+        return new BookingResponse
+        {
+            BookingId = saga.Id,
+            CorrelationId = saga.CorrelationId,
+            Status = saga.CurrentState,
+            Message = "Booking saga started",
+            CreatedAt = saga.CreatedAt
+        };
     }
 
-    public void HandleStepFailed(string stepName, Guid bookingId, string reason)
+    public async Task HandleStepCompleted(string stepName, Guid bookingId)
     {
-        // 1. Set state to Compensating
-        // 2. Start compensation (cancel completed steps in reverse)
-        throw new NotImplementedException();
+        var saga = await _repository.GetByIdAsync(bookingId);
+        if (saga is null) return;
+
+        saga.CompletedSteps.Add(stepName);
+
+        // TODO: Determine next state and publish next command to Kafka
+
+        await _repository.UpdateAsync(saga);
+    }
+
+    public async Task HandleStepFailed(string stepName, Guid bookingId, string reason)
+    {
+        var saga = await _repository.GetByIdAsync(bookingId);
+        if (saga is null) return;
+
+        saga.CurrentState = SagaState.Compensating;
+        saga.FailureReason = reason;
+
+        // TODO: Publish compensation commands to Kafka (reverse order)
+
+        await _repository.UpdateAsync(saga);
     }
 }
