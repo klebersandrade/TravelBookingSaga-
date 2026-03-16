@@ -1,0 +1,63 @@
+site_name: TravelBookingSaga
+site_description: Travel booking system with SAGA Pattern, Apache Kafka, CQRS, and Microservices in .NET 10
+site_url: https://klebersandrade.github.io/TravelBookingSaga-
+repo_url: https://github.com/klebersandrade/TravelBookingSaga-
+repo_name: klebersandrade/TravelBookingSaga-
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - tables
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - SAGA Pattern: architecture/saga-pattern.md
+      - CQRS: architecture/cqrs.md
+      - Apache Kafka: architecture/kafka.md
+      - Database: architecture/database.md
+  - ADRs:
+      - Index: adr/index.md
+      - "001 - SAGA Orchestration": adr/001-saga-orchestration.md
+      - "002 - Kafka as Broker": adr/002-kafka-over-rabbitmq.md
+      - "003 - Confluent.Kafka": adr/003-confluent-kafka-over-masstransit.md
+      - "004 - Database per Service": adr/004-database-per-service.md
+      - "005 - Redis Read Store": adr/005-redis-read-store.md
+      - "006 - Firebase Realtime": adr/006-firebase-realtime.md
+  - Learning Journal:
+      - Kafka Concepts: learning-journal/kafka-concepts.md
