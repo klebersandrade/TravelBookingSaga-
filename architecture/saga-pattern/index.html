@@ -1,0 +1,1713 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Travel booking system with SAGA Pattern, Apache Kafka, CQRS, and Microservices in .NET 10">
+      
+      
+      
+        <link rel="canonical" href="https://klebersandrade.github.io/TravelBookingSaga-/architecture/saga-pattern/">
+      
+      
+        <link rel="prev" href="../overview/">
+      
+      
+        <link rel="next" href="../cqrs/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>SAGA Pattern - TravelBookingSaga</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#saga-pattern" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="TravelBookingSaga" class="md-header__button md-logo" aria-label="TravelBookingSaga" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TravelBookingSaga
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SAGA Pattern
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/klebersandrade/TravelBookingSaga-" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    klebersandrade/TravelBookingSaga-
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="TravelBookingSaga" class="md-nav__button md-logo" aria-label="TravelBookingSaga" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    TravelBookingSaga
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/klebersandrade/TravelBookingSaga-" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    klebersandrade/TravelBookingSaga-
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAGA Pattern
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAGA Pattern
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-the-saga-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is the SAGA Pattern?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestration-vs-choreography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestration vs Choreography
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestration vs Choreography">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#orchestration-this-projects-choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestration (this project's choice)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choreography-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choreography (alternative)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-we-chose-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why we chose Orchestration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#business-rule-flexible-booking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Business Rule: Flexible Booking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-flow-happy-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full Flow: Happy Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Full Flow: Happy Path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-flight-car-hotel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Flight + Car + Hotel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-flight-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Flight Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compensation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compensation Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compensation Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-hotel-fails-after-flight-and-car-reserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Hotel fails after Flight and Car reserved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-payment-fails-worst-case-everything-must-compensate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Payment fails (worst case - everything must compensate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saga-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAGA State Machine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeout-and-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeout and Retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compensation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compensation Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cqrs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CQRS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kafka/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apache Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/001-saga-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    001 - SAGA Orchestration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/002-kafka-over-rabbitmq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    002 - Kafka as Broker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/003-confluent-kafka-over-masstransit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    003 - Confluent.Kafka
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/004-database-per-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    004 - Database per Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/005-redis-read-store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    005 - Redis Read Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/006-firebase-realtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    006 - Firebase Realtime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning Journal
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning Journal
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning-journal/kafka-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kafka Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-the-saga-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is the SAGA Pattern?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestration-vs-choreography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestration vs Choreography
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestration vs Choreography">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#orchestration-this-projects-choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Orchestration (this project's choice)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#choreography-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choreography (alternative)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-we-chose-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why we chose Orchestration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#business-rule-flexible-booking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Business Rule: Flexible Booking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-flow-happy-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full Flow: Happy Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Full Flow: Happy Path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-flight-car-hotel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Flight + Car + Hotel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-flight-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Flight Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compensation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compensation Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compensation Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-hotel-fails-after-flight-and-car-reserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Hotel fails after Flight and Car reserved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-payment-fails-worst-case-everything-must-compensate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Payment fails (worst case - everything must compensate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saga-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAGA State Machine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeout-and-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeout and Retry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compensation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compensation Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="saga-pattern">SAGA Pattern</h1>
+<h2 id="what-is-the-saga-pattern">What is the SAGA Pattern?</h2>
+<p>The SAGA pattern is a solution for managing <strong>distributed transactions</strong> in microservice architectures. In a monolith, we use ACID database transactions. In microservices, where each service has its own database, we need an alternative.</p>
+<p>A SAGA is a sequence of <strong>local transactions</strong>. Each transaction updates a service and publishes an event/message to trigger the next transaction. If a transaction fails, the SAGA executes <strong>compensating transactions</strong> to undo previous changes.</p>
+<h2 id="orchestration-vs-choreography">Orchestration vs Choreography</h2>
+<h3 id="orchestration-this-projects-choice">Orchestration (this project's choice)</h3>
+<p>A central service (the <strong>Orchestrator</strong>) coordinates all participants. It knows the step order, sends commands to each service, and handles responses.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant O as Orchestrator
+    participant F as Flight Service
+    participant C as CarRental Service
+    participant H as Hotel Service
+
+    O-&gt;&gt;F: ReserveFlightCommand
+    F--&gt;&gt;O: FlightReservedReply
+    O-&gt;&gt;C: ReserveCarCommand
+    C--&gt;&gt;O: CarReservedReply
+    O-&gt;&gt;H: ReserveHotelCommand
+    H--&gt;&gt;O: HotelReservedReply</code></pre>
+<p><strong>Advantages:</strong>
+- Centralized and easy-to-understand flow
+- Precise control over execution order
+- Compensations managed in a single place
+- Simplified debugging and monitoring</p>
+<p><strong>Disadvantages:</strong>
+- Risk of the Orchestrator becoming a "God Service"
+- Single point of failure (mitigated with replicas)
+- Logical coupling between Orchestrator and participants</p>
+<h3 id="choreography-alternative">Choreography (alternative)</h3>
+<p>Each service reacts to events and publishes new events. There is no central coordinator.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant F as Flight Service
+    participant C as CarRental Service
+    participant H as Hotel Service
+
+    Note over F: Listens to BookingCreated
+    F-&gt;&gt;F: Reserves flight
+    F-&gt;&gt;C: Publishes FlightReserved
+    Note over C: Listens to FlightReserved
+    C-&gt;&gt;C: Reserves car
+    C-&gt;&gt;H: Publishes CarReserved
+    Note over H: Listens to CarReserved
+    H-&gt;&gt;H: Reserves hotel</code></pre>
+<p><strong>Advantages:</strong>
+- Full decoupling between services
+- No single point of failure
+- Each service is autonomous</p>
+<p><strong>Disadvantages:</strong>
+- Hard-to-trace flow (spread across N services)
+- Complex compensations (each service must know what to undo)
+- Risk of circular dependencies
+- Difficult to debug</p>
+<h3 id="why-we-chose-orchestration">Why we chose Orchestration</h3>
+<p>For this project, Orchestration was chosen because:
+1. The flow is <strong>visible and documentable</strong> in a single place
+2. <strong>Compensations</strong> are controlled centrally and predictably
+3. Facilitates <strong>Kafka learning</strong> (clear request/reply pattern)
+4. More <strong>didactic</strong> for a portfolio (reviewers understand the flow by reading one file)</p>
+<blockquote>
+<p>See <a href="../../adr/001-saga-orchestration/">ADR-001</a> for the full decision.</p>
+</blockquote>
+<h2 id="business-rule-flexible-booking">Business Rule: Flexible Booking</h2>
+<p>A booking requires <strong>at least 1</strong> of the 3 reservation services:</p>
+<table>
+<thead>
+<tr>
+<th>Combination</th>
+<th>Valid?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flight only</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Car only</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Hotel only</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Flight + car</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Flight + hotel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Car + hotel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Flight + car + hotel</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>None</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>The Orchestrator builds the SAGA <strong>dynamically</strong>, including only the steps needed for the requested items. <code>Payment</code> and <code>Notification</code> are always included.</p>
+<h2 id="full-flow-happy-path">Full Flow: Happy Path</h2>
+<h3 id="example-flight-car-hotel">Example: Flight + Car + Hotel</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    actor U as User
+    participant GW as API Gateway
+    participant O as Orchestrator
+    participant F as Flight Service
+    participant C as CarRental Service
+    participant H as Hotel Service
+    participant P as Payment Service
+    participant N as Notification Service
+    participant FB as Firebase
+
+    U-&gt;&gt;GW: POST /api/v1/bookings
+    GW-&gt;&gt;O: CreateBookingCommand
+
+    Note over O: State: STARTED
+
+    O-&gt;&gt;F: ReserveFlightCommand (via Kafka)
+    F--&gt;&gt;O: FlightReservedReply (via Kafka)
+    Note over O: State: FLIGHT_RESERVED
+
+    O-&gt;&gt;C: ReserveCarCommand (via Kafka)
+    C--&gt;&gt;O: CarReservedReply (via Kafka)
+    Note over O: State: CAR_RESERVED
+
+    O-&gt;&gt;H: ReserveHotelCommand (via Kafka)
+    H--&gt;&gt;O: HotelReservedReply (via Kafka)
+    Note over O: State: HOTEL_RESERVED
+
+    O-&gt;&gt;P: ProcessPaymentCommand (via Kafka)
+    P--&gt;&gt;O: PaymentCompletedReply (via Kafka)
+    Note over O: State: PAYMENT_COMPLETED
+
+    O-&gt;&gt;F: ConfirmFlightCommand (via Kafka)
+    O-&gt;&gt;C: ConfirmCarCommand (via Kafka)
+    O-&gt;&gt;H: ConfirmHotelCommand (via Kafka)
+
+    Note over O: State: BOOKING_COMPLETED
+
+    O-&gt;&gt;N: BookingCompletedEvent (via Kafka)
+    N-&gt;&gt;FB: Updates status in real-time
+    FB--&gt;&gt;U: Real-time notification (WebSocket)</code></pre>
+<h3 id="example-flight-only">Example: Flight Only</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant O as Orchestrator
+    participant F as Flight Service
+    participant P as Payment Service
+    participant N as Notification Service
+
+    Note over O: State: STARTED (flight only requested)
+
+    O-&gt;&gt;F: ReserveFlightCommand
+    F--&gt;&gt;O: FlightReservedReply
+    Note over O: State: FLIGHT_RESERVED
+
+    O-&gt;&gt;P: ProcessPaymentCommand
+    P--&gt;&gt;O: PaymentCompletedReply
+    Note over O: State: PAYMENT_COMPLETED
+
+    O-&gt;&gt;F: ConfirmFlightCommand
+    Note over O: State: BOOKING_COMPLETED
+
+    O-&gt;&gt;N: BookingCompletedEvent</code></pre>
+<h2 id="compensation-flow">Compensation Flow</h2>
+<h3 id="example-hotel-fails-after-flight-and-car-reserved">Example: Hotel fails after Flight and Car reserved</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant O as Orchestrator
+    participant F as Flight Service
+    participant C as CarRental Service
+    participant H as Hotel Service
+    participant N as Notification Service
+    participant FB as Firebase
+
+    Note over O: State: STARTED
+
+    O-&gt;&gt;F: ReserveFlightCommand
+    F--&gt;&gt;O: FlightReservedReply ✅
+    Note over O: State: FLIGHT_RESERVED
+
+    O-&gt;&gt;C: ReserveCarCommand
+    C--&gt;&gt;O: CarReservedReply ✅
+    Note over O: State: CAR_RESERVED
+
+    O-&gt;&gt;H: ReserveHotelCommand
+    H--&gt;&gt;O: HotelReservationFailedReply ❌
+
+    Note over O: State: COMPENSATING
+
+    rect rgb(255, 200, 200)
+        Note over O: Compensation (reverse order)
+        O-&gt;&gt;C: CancelCarCommand
+        C--&gt;&gt;O: CarCancelledReply
+        O-&gt;&gt;F: CancelFlightCommand
+        F--&gt;&gt;O: FlightCancelledReply
+    end
+
+    Note over O: State: BOOKING_FAILED
+
+    O-&gt;&gt;N: BookingFailedEvent
+    N-&gt;&gt;FB: Updates status (failure)
+    FB--&gt;&gt;FB: Frontend receives failure notification</code></pre>
+<h3 id="example-payment-fails-worst-case-everything-must-compensate">Example: Payment fails (worst case - everything must compensate)</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant O as Orchestrator
+    participant F as Flight Service
+    participant C as CarRental Service
+    participant H as Hotel Service
+    participant P as Payment Service
+
+    O-&gt;&gt;F: ReserveFlightCommand → ✅
+    O-&gt;&gt;C: ReserveCarCommand → ✅
+    O-&gt;&gt;H: ReserveHotelCommand → ✅
+    O-&gt;&gt;P: ProcessPaymentCommand → ❌
+
+    Note over O: COMPENSATING
+
+    rect rgb(255, 200, 200)
+        O-&gt;&gt;H: CancelHotelCommand → ✅
+        O-&gt;&gt;C: CancelCarCommand → ✅
+        O-&gt;&gt;F: CancelFlightCommand → ✅
+    end
+
+    Note over O: BOOKING_FAILED</code></pre>
+<h2 id="saga-state-machine">SAGA State Machine</h2>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; Started: CreateBooking
+
+    Started --&gt; FlightReserving: has flight?
+    Started --&gt; CarReserving: no flight, has car?
+    Started --&gt; HotelReserving: only hotel?
+
+    FlightReserving --&gt; FlightReserved: success
+    FlightReserving --&gt; Compensating: failure
+
+    FlightReserved --&gt; CarReserving: has car?
+    FlightReserved --&gt; HotelReserving: no car, has hotel?
+    FlightReserved --&gt; Paying: only flight
+
+    CarReserving --&gt; CarReserved: success
+    CarReserving --&gt; Compensating: failure
+
+    CarReserved --&gt; HotelReserving: has hotel?
+    CarReserved --&gt; Paying: no hotel
+
+    HotelReserving --&gt; HotelReserved: success
+    HotelReserving --&gt; Compensating: failure
+
+    HotelReserved --&gt; Paying
+
+    Paying --&gt; Paid: success
+    Paying --&gt; Compensating: failure
+
+    Paid --&gt; Confirming
+    Confirming --&gt; Completed: all confirmed
+    Confirming --&gt; Compensating: failure
+
+    Compensating --&gt; Failed: all compensated
+
+    Completed --&gt; [*]
+    Failed --&gt; [*]</code></pre>
+<h2 id="key-concepts">Key Concepts</h2>
+<h3 id="idempotency">Idempotency</h3>
+<p>All handlers must be <strong>idempotent</strong>: processing the same message multiple times must have the same effect as processing it once. This is crucial because Kafka guarantees <strong>at-least-once delivery</strong>.</p>
+<p><strong>Strategy</strong>: Each command carries a <code>BookingId</code> + <code>CorrelationId</code>. The service checks whether it has already processed that command before executing.</p>
+<h3 id="timeout-and-retry">Timeout and Retry</h3>
+<ul>
+<li>Each SAGA step has a <strong>configurable timeout</strong></li>
+<li>If the Orchestrator doesn't receive a response within the timeout, it can:</li>
+<li>Resend the command (retry)</li>
+<li>Start compensation (after N retries)</li>
+</ul>
+<h3 id="compensation-order">Compensation Order</h3>
+<p>Compensations are executed in <strong>reverse order</strong> of completed steps. This ensures we don't try to cancel something that depends on a later step.</p>
+<h3 id="state-persistence">State Persistence</h3>
+<p>The Orchestrator persists the SAGA state at every transition. If the Orchestrator crashes and restarts, it can resume in-progress SAGAs from where they left off (Event Sourcing).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
