@@ -1,0 +1,6 @@
+@Booking.Orchestrator_HostAddress = http://localhost:5251
+
+GET {{Booking.Orchestrator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
